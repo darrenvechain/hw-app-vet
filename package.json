@@ -1,0 +1,21 @@
+{
+  "name": "thor-ledger",
+  "version": "1.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ledgerhq/hw-transport": "^4.52.0"
+  },
+  "devDependencies": {
+    "@types/ledgerhq__hw-transport": "^4.21.1",
+    "@types/node": "^11.13.5",
+    "typescript": "^3.4.3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
