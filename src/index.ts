@@ -128,6 +128,24 @@ export class ThorLedger {
         return response.slice(0, 65);
     }
 
+    public async signHash(path: string, hash: Buffer): Promise<Buffer> {
+        if (hash.length != 32) {
+            throw new Error('hash: must be 32 bytes')
+        }
+        let paths = this.splitPath(path);
+        let buffer = Buffer.alloc(1 + paths.length * 4 + 32);
+        buffer[0] = paths.length;
+        paths.forEach((element, index) => {
+            buffer.writeUInt32BE(element, 1 + 4 * index);
+        });
+        hash.copy(buffer, 1 + 4 * paths.length, 0, 32);
+        let response = await this.transport.send(0xE0, 0x09, 0x00, 0x00, buffer, [StatusCodes.OK]);
+        if (response.length < 65) {
+            throw new Error('invalid signature')
+        }
+        return response.slice(0, 65);
+    }
+
     private splitPath(path: string): number[] {
         let result: any = [];
         let components = path.split("/");
