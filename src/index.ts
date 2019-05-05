@@ -58,37 +58,23 @@ export class ThorLedger {
     }
 
     public async signTransaction(path: string, rawTx: Buffer): Promise<Buffer> {
-        let toSend = this.splitRaw(path, rawTx, true)
-        let response: Buffer;
-        for (let i = 0; i < toSend.length; i++) {
-            let data = toSend[i];
-            response = await this.transport.send(0xE0, 0x04, i === 0 ? 0x00 : 0x80, 0x00, data, [StatusCodes.OK]);
-        }
-        if (response.length < 65) {
-            throw new Error('invalid signature')
-        }
-        return response.slice(0, 65);
+        return this.sign(path, rawTx, true, 0xE0, 0x04)
     }
 
     public async signMessage(path: string, message: Buffer): Promise<Buffer> {
-        let toSend = this.splitRaw(path, message, false)
-        let response: Buffer;
-        for (let i = 0; i < toSend.length; i++) {
-            let data = toSend[i];
-            response = await this.transport.send(0xE0, 0x08, i === 0 ? 0x00 : 0x80, 0x00, data, [StatusCodes.OK]);
-        }
-        if (response.length < 65) {
-            throw new Error('invalid signature')
-        }
-        return response.slice(0, 65);
+        return this.sign(path, message, false, 0xE0, 0x08)
     }
 
     public async signJSON(path: string, rawJSON: Buffer): Promise<Buffer> {
-        let toSend = this.splitRaw(path, rawJSON, false)
+        return this.sign(path, rawJSON, false, 0xE0, 0x09)
+    }
+
+    private async sign(path: string, raw: Buffer, isTransaction: boolean, cla: number, ins: number): Promise<Buffer> {
+        let buffers = this.splitRaw(path, raw, isTransaction)
         let response: Buffer;
-        for (let i = 0; i < toSend.length; i++) {
-            let data = toSend[i];
-            response = await this.transport.send(0xE0, 0x09, i === 0 ? 0x00 : 0x80, 0x00, data, [StatusCodes.OK]);
+        for (let i = 0; i < buffers.length; i++) {
+            let data = buffers[i];
+            response = await this.transport.send(cla, ins, i === 0 ? 0x00 : 0x80, 0x00, data, [StatusCodes.OK]);
         }
         if (response.length < 65) {
             throw new Error('invalid signature')
@@ -181,5 +167,3 @@ export enum StatusCodes {
     LICENSING = 0x6f42,
     HALTED = 0x6faa
 }
-
-
