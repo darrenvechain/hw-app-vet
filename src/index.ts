@@ -58,30 +58,7 @@ export class ThorLedger {
     }
 
     public async signTransaction(path: string, rawTx: Buffer): Promise<Buffer> {
-        let paths = this.splitPath(path);
-        let offset = 0;
-        let toSend = [];
-        while (offset !== rawTx.length) {
-            let maxChunkSize = offset === 0 ? 255 - 1 - paths.length * 4 : 255;
-            let chunkSize =
-                offset + maxChunkSize > rawTx.length
-                    ? rawTx.length - offset
-                    : maxChunkSize;
-            let buffer = Buffer.alloc(
-                offset === 0 ? 1 + paths.length * 4 + chunkSize : chunkSize
-            );
-            if (offset === 0) {
-                buffer[0] = paths.length;
-                paths.forEach((element, index) => {
-                    buffer.writeUInt32BE(element, 1 + 4 * index);
-                });
-                rawTx.copy(buffer, 1 + 4 * paths.length, offset, offset + chunkSize);
-            } else {
-                rawTx.copy(buffer, 0, offset, offset + chunkSize);
-            }
-            toSend.push(buffer);
-            offset += chunkSize;
-        }
+        let toSend = this.splitRaw(path, rawTx, true)
         let response: Buffer;
         for (let i = 0; i < toSend.length; i++) {
             let data = toSend[i];
@@ -94,29 +71,7 @@ export class ThorLedger {
     }
 
     public async signMessage(path: string, message: Buffer): Promise<Buffer> {
-        let paths = this.splitPath(path);
-        let offset = 0;
-        let toSend = [];
-        while (offset !== message.length) {
-            let maxChunkSize = offset === 0 ? 255 - 1 - paths.length * 4 - 4 : 255;
-            let chunkSize =
-                offset + maxChunkSize > message.length
-                    ? message.length - offset
-                    : maxChunkSize;
-            let buffer = Buffer.alloc(offset === 0 ? 1 + paths.length * 4 + 4 + chunkSize : chunkSize);
-            if (offset === 0) {
-                buffer[0] = paths.length;
-                paths.forEach((element, index) => {
-                    buffer.writeUInt32BE(element, 1 + 4 * index);
-                });
-                buffer.writeUInt32BE(message.length, 1 + 4 * paths.length);
-                message.copy(buffer, 1 + 4 * paths.length + 4, offset, offset + chunkSize);
-            } else {
-                message.copy(buffer, 0, offset, offset + chunkSize);
-            }
-            toSend.push(buffer);
-            offset += chunkSize;
-        }
+        let toSend = this.splitRaw(path, message, false)
         let response: Buffer;
         for (let i = 0; i < toSend.length; i++) {
             let data = toSend[i];
@@ -128,22 +83,47 @@ export class ThorLedger {
         return response.slice(0, 65);
     }
 
-    public async signHash(path: string, hash: Buffer): Promise<Buffer> {
-        if (hash.length != 32) {
-            throw new Error('hash: must be 32 bytes')
+    public async signJSON(path: string, rawJSON: Buffer): Promise<Buffer> {
+        let toSend = this.splitRaw(path, rawJSON, false)
+        let response: Buffer;
+        for (let i = 0; i < toSend.length; i++) {
+            let data = toSend[i];
+            response = await this.transport.send(0xE0, 0x09, i === 0 ? 0x00 : 0x80, 0x00, data, [StatusCodes.OK]);
         }
-        let paths = this.splitPath(path);
-        let buffer = Buffer.alloc(1 + paths.length * 4 + 32);
-        buffer[0] = paths.length;
-        paths.forEach((element, index) => {
-            buffer.writeUInt32BE(element, 1 + 4 * index);
-        });
-        hash.copy(buffer, 1 + 4 * paths.length, 0, 32);
-        let response = await this.transport.send(0xE0, 0x09, 0x00, 0x00, buffer, [StatusCodes.OK]);
         if (response.length < 65) {
             throw new Error('invalid signature')
         }
         return response.slice(0, 65);
+    }
+
+    private splitRaw(path: string, raw: Buffer, isTransaction: boolean): Array<Buffer> {
+        let contentByteLength = isTransaction ? 0 : 4
+        let paths = this.splitPath(path);
+        let offset = 0;
+        let buffers = [];
+        while (offset !== raw.length) {
+            let maxChunkSize = offset === 0 ? 255 - 1 - paths.length * 4 - contentByteLength : 255;
+            let chunkSize = offset + maxChunkSize > raw.length ?
+                raw.length - offset : maxChunkSize;
+            let buffer = Buffer.alloc(offset === 0 ? 1 + paths.length * 4 + contentByteLength + chunkSize : chunkSize);
+            if (offset === 0) {
+                buffer[0] = paths.length;
+                paths.forEach((element, index) => {
+                    buffer.writeUInt32BE(element, 1 + 4 * index);
+                });
+                if (isTransaction) {
+                    raw.copy(buffer, 1 + 4 * paths.length, offset, offset + chunkSize);
+                } else {
+                    buffer.writeUInt32BE(raw.length, 1 + 4 * paths.length);
+                    raw.copy(buffer, 1 + 4 * paths.length + 4, offset, offset + chunkSize);
+                }
+            } else {
+                raw.copy(buffer, 0, offset, offset + chunkSize);
+            }
+            buffers.push(buffer);
+            offset += chunkSize;
+        }
+        return buffers
     }
 
     private splitPath(path: string): number[] {
