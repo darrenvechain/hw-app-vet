@@ -1,11 +1,13 @@
 {
   "name": "@vechain/hw-app-vet",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Ledger Hardware Wallet VeChain JavaScript bindings.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -p .",
+    "lint": "tslint -p .",
+    "prepare": "rm -rf dist/; npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
