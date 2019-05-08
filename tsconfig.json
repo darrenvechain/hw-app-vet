@@ -1,20 +1,15 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "declaration": true,
-    "target": "es2017",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "outDir": "dist",
-    "baseUrl": ".",
-    "paths": {
-      "*": [
-        "node_modules/*",
-        "src/types/*"
-      ]
-    }
-  },
-  "include": [
-    "src/**/*"
-  ]
-}
+    "compilerOptions": {
+      "target": "es6",
+      "module": "commonjs",
+      "strict": true,
+      "outDir": "./dist",
+      "inlineSourceMap": true,
+      "declaration": true,
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true,
+    },
+    "include": [
+      "./src"
+    ]
+  }

@@ -1,22 +1,20 @@
 {
-  "name": "hw-app-vet",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/vet.js",
-  "types": "dist/vet.d.ts",
+  "name": "@vechain/hw-app-vet",
+  "version": "0.1.0",
+  "description": "Ledger Hardware Wallet VeChain JavaScript bindings.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p .",
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {
-    "@ledgerhq/hw-transport": "^4.52.0"
   },
   "devDependencies": {
     "@types/ledgerhq__hw-transport": "^4.21.1",
-    "@types/node": "^11.13.5",
+    "tslint": "^5.16.0",
     "typescript": "^3.4.3"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": "dinn",
+  "license": "LGPL-3.0",
+  "dependencies": {}
 }
