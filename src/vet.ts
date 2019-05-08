@@ -1,5 +1,5 @@
 import Transport from '@ledgerhq/hw-transport';
-export class ThorLedger {
+export default class ThorLedger {
     private transport: Transport;
     constructor(transport: Transport) {
         this.transport = transport;

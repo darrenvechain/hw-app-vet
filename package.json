@@ -2,8 +2,8 @@
   "name": "thor-ledger",
   "version": "1.0.3",
   "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/vet.js",
+  "types": "dist/vet.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
