@@ -1,6 +1,6 @@
 {
   "name": "hw-app-vet",
-  "version": "1.0.3",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/vet.js",
   "types": "dist/vet.d.ts",
