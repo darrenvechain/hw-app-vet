@@ -1,5 +1,5 @@
 {
-  "name": "thor-ledger",
+  "name": "hw-app-vet",
   "version": "1.0.3",
   "description": "",
   "main": "dist/vet.js",
